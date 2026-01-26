@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Optional
 
@@ -16,3 +17,9 @@ def parse_amount(amount_str: str) -> Optional[float]:
         return float(amount_str)
     except Exception:
         return None
+
+
+def normalize_text(text: str) -> str:
+    """Lowercase text and remove non-alphanumeric characters except spaces."""
+    text = text.lower()
+    return re.sub(r'[^a-z0-9\s]', '', text)
