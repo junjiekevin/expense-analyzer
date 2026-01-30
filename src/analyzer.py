@@ -73,8 +73,31 @@ def main():
         print("-" * 75)
         for t in txns:
             print(f"{str(t['date']):<12} | {t['description'][:30]:<30} | {t['amount']:>10.2f} | {t['category']:<15}")
+
     except Exception as e:
         print(f"Error: {e}")
+        return
+
+    # Phase 3: Monthly Aggregation
+    import stats
+    monthly_data = stats.get_monthly_summary(txns)
+    
+    print("\n" + "="*50)
+    print("MONTHLY SUMMARY")
+    print("="*50)
+    
+    for month, data in sorted(monthly_data.items()):
+        print(f"\n--- Month: {month} ---")
+        print(f"Income:       ${data['income']:,.2f}")
+        print(f"Expenses:     ${abs(data['expenses']):,.2f}")
+        print(f"Savings:      ${data['savings']:,.2f}")
+        print(f"Savings Rate: {data['savings_rate']:.1f}%")
+        print("\nTop Spending Categories:")
+        
+        # Sort categories by spend (descending)
+        sorted_cats = sorted(data['categories'].items(), key=lambda x: x[1], reverse=True)
+        for cat, amt in sorted_cats:
+            print(f"  {cat:<15} ${amt:,.2f}")
 
 
 if __name__ == "__main__":
