@@ -1,4 +1,4 @@
-# 💸 Smart Expense Analyzer (Python CLI)
+# 💸 Expense Analyzer (Python CLI)
 
 A lightweight Python command-line tool that analyzes personal finance transactions from a CSV file and generates clear spending summaries and insights.
 
