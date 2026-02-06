@@ -62,14 +62,33 @@ def load_transactions(csv_path: str) -> List[Dict[str, Any]]:
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Smart Expense Analyzer - Phase 2: Categorization")
+    from datetime import date
+    parser = argparse.ArgumentParser(description="Smart Expense Analyzer - Phase 4: Terminal Output & Reporting")
     parser.add_argument("csv", help="Path to the transactions CSV file")
     args = parser.parse_args()
     
     try:
         txns = load_transactions(args.csv)
-        print(f"\nSuccessfully parsed and categorized {len(txns)} transactions:\n")
-        print(f"{'Date':<12} | {'Description':<30} | {'Amount':>10} | {'Category':<15}")
+        
+        # Period Summary Header
+        if not txns:
+            print("\nNo transactions found to analyze.")
+            return
+            
+        dates = [t['date'] for t in txns]
+        min_date = min(dates)
+        max_date = max(dates)
+        period_str = f"{min_date.strftime('%B %Y')} - {max_date.strftime('%B %Y')}"
+        
+        print("\n" + "="*60)
+        print("  SMART EXPENSE ANALYZER")
+        print("="*60)
+        print(f"  Period: {period_str}")
+        print(f"  Transactions: {len(txns)}")
+        print("="*60)
+        
+        # Transaction Table
+        print(f"\n{'Date':<12} | {'Description':<30} | {'Amount':>10} | {'Category':<15}")
         print("-" * 75)
         for t in txns:
             print(f"{str(t['date']):<12} | {t['description'][:30]:<30} | {t['amount']:>10.2f} | {t['category']:<15}")
@@ -78,26 +97,40 @@ def main():
         print(f"Error: {e}")
         return
 
-    # Phase 3: Monthly Aggregation
+    # Monthly Aggregation
     import stats
     monthly_data = stats.get_monthly_summary(txns)
     
-    print("\n" + "="*50)
-    print("MONTHLY SUMMARY")
-    print("="*50)
-    
     for month, data in sorted(monthly_data.items()):
-        print(f"\n--- Month: {month} ---")
-        print(f"Income:       ${data['income']:,.2f}")
-        print(f"Expenses:     ${abs(data['expenses']):,.2f}")
-        print(f"Savings:      ${data['savings']:,.2f}")
-        print(f"Savings Rate: {data['savings_rate']:.1f}%")
-        print("\nTop Spending Categories:")
+        month_name = date(int(month.split('-')[0]), int(month.split('-')[1]), 1).strftime('%B %Y')
         
-        # Sort categories by spend (descending)
+        print("\n" + "="*60)
+        print(f"  {month_name.upper()} SUMMARY")
+        print("="*60)
+        
+        income_str = f"${data['income']:,.2f}"
+        expenses_str = f"${abs(data['expenses']):,.2f}"
+        savings_str = f"${data['savings']:,.2f}"
+        rate_str = f"{data['savings_rate']:.1f}%"
+        
+        print(f"\n  Total Income:      {income_str:>15}")
+        print(f"  Total Expenses:    {expenses_str:>15}")
+        print(f"  Net Savings:       {savings_str:>15}")
+        print(f"  Savings Rate:      {rate_str:>15}")
+        
+        print("\n" + "-"*60)
+        print("  TOP SPENDING CATEGORIES")
+        print("-"*60)
+        
+        # Calculate category percentages
+        total_expenses = abs(data['expenses'])
         sorted_cats = sorted(data['categories'].items(), key=lambda x: x[1], reverse=True)
+        
         for cat, amt in sorted_cats:
-            print(f"  {cat:<15} ${amt:,.2f}")
+            pct = (amt / total_expenses * 100) if total_expenses > 0 else 0.0
+            print(f"  {cat:<18} ${amt:>10,.2f}  ({pct:>5.1f}%)")
+        
+        print("="*60)
 
 
 if __name__ == "__main__":
